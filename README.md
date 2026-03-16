@@ -156,3 +156,30 @@ Any exchange supported by [`exchange_calendars`](https://github.com/gerrymanoim/
 | `XSHG` | Shanghai |
 
 Run with an invalid code to see the full list.
+
+## Q&A
+
+**Q: Does `fin-bash` distinguish between open and closed hours on a trading day?**
+
+By default, no — `fin-bash` runs your script as long as it's a trading day, regardless of what time it is. Cron already handles the scheduling; `fin-bash` just gates on "is it a trading day?"
+
+If you need time-of-day awareness, opt in with `--session`:
+
+| Flag | Behavior |
+|------|----------|
+| `--session any` *(default)* | Runs if today is a trading day — ignores time |
+| `--session regular` | Runs only during market hours (e.g., 09:30–16:00 ET) |
+| `--session pre` | Runs only during pre-market (e.g., 04:00–09:30 ET) |
+| `--session post` | Runs only during post-market (e.g., 16:00–20:00 ET) |
+
+**Q: Does `--session regular` handle half trading days (like the day before Thanksgiving)?**
+
+Yes. `fin-bash` uses the **actual close time** from the exchange calendar, not a hardcoded 16:00. On early-close days, the session window adjusts automatically:
+
+```
+$ fin-bash check --date 2026-11-27
+✓  2026-11-27  is a trading day on XNYS
+   Session: 09:30 – 13:00 America/New_York
+```
+
+So `--session regular` at 14:00 ET on that day would **skip**, because 14:00 is past the 13:00 early close.
