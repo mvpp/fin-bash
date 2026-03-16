@@ -1,0 +1,17 @@
+# fin-bash configuration
+# Place this file at ~/.config/fin-bash/config.yaml
+
+# Default exchange (if --exchange not specified on CLI)
+# Uses exchange_calendars codes: XNYS (NYSE), XNAS (NASDAQ), XLON (LSE),
+# XTKS (Tokyo), XHKG (Hong Kong), XSHG (Shanghai), etc.
+exchange: XNYS
+
+# Default session type: any | regular | pre | post
+# "any" = just check if it's a trading day (ignores time of day)
+# "regular" / "pre" / "post" = also check current time against session hours
+session: any
+
+# Logging
+logging:
+  level: INFO
+  file: ~/.local/log/fin-bash/fin-bash.log

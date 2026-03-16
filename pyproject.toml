@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fin-bash"
+version = "0.1.0"
+description = "Market-aware cron wrapper — only runs your script on trading days"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+
+dependencies = [
+    "exchange-calendars>=4.5",
+    "pyyaml>=6.0",
+]
+
+[project.scripts]
+fin-bash = "fin_bash.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["fin_bash*"]
