@@ -4,17 +4,63 @@
 
 ## Installation
 
+### Requirements
+
+- **Python 3.9+** (check with `python3 --version`)
+- **pip** (usually bundled with Python)
+
+### macOS / Linux
+
 ```bash
-cd ~/Programs/fin-bash
+# 1. Clone the repo
+git clone https://github.com/mvpp/fin-bash.git
+cd fin-bash
+
+# 2. Create a virtual environment and install
 python3 -m venv .venv
 .venv/bin/pip install -e .
+
+# 3. (Option A) Symlink to a directory on your PATH
+sudo ln -s "$(pwd)/.venv/bin/fin-bash" /usr/local/bin/fin-bash
+
+# 3. (Option B) Or use the full path directly in crontab
+#    ~/path/to/fin-bash/.venv/bin/fin-bash
 ```
 
-Then use the full path in crontab: `~/Programs/fin-bash/.venv/bin/fin-bash`
+> **Note:** On macOS, if `/usr/local/bin` doesn't exist, create it with `sudo mkdir -p /usr/local/bin` or use `~/.local/bin` instead (make sure it's on your `$PATH`).
 
-Or symlink it somewhere on your `$PATH`:
+### Windows
+
+On Windows, `cron` is not available natively. Use **Task Scheduler** instead.
+
+```powershell
+# 1. Clone the repo
+git clone https://github.com/mvpp/fin-bash.git
+cd fin-bash
+
+# 2. Create a virtual environment and install
+python -m venv .venv
+.venv\Scripts\pip install -e .
+
+# 3. Verify it works
+.venv\Scripts\fin-bash.exe check
+```
+
+To use with **Task Scheduler**:
+1. Open Task Scheduler → **Create Basic Task**
+2. Set the trigger to your desired schedule (e.g., daily at 9:30 AM, weekdays only)
+3. Set the action to **Start a program**:
+   - **Program:** `C:\path\to\fin-bash\.venv\Scripts\fin-bash.exe`
+   - **Arguments:** `your_script.sh` (or `--exchange XLON your_script.sh`)
+
+> **Note:** `fin-bash` invokes `/bin/bash` to run scripts, which requires WSL or Git Bash on Windows. If you're using PowerShell scripts (`.ps1`), you'll need to modify the tool to call `powershell.exe` instead.
+
+### Verify installation
+
 ```bash
-ln -s ~/Programs/fin-bash/.venv/bin/fin-bash /usr/local/bin/fin-bash
+fin-bash --help          # show all options
+fin-bash check           # is today a trading day?
+fin-bash next --count 5  # upcoming trading days
 ```
 
 ## Usage
