@@ -2,6 +2,21 @@
 
 **Market-aware cron wrapper** — drop-in replacement for `/bin/bash` in your crontab that only runs your script on trading days.
 
+Also works as a **standalone CLI tool** with structured, parseable output — friendly to **agentic AI** workflows.
+
+> **Why agentic-friendly?**
+> LLM agents and orchestration loops can call `fin-bash check` or `fin-bash next` to decide at runtime whether to trigger market-dependent tasks. The output is concise and deterministic — no scraping, no API keys, no rate limits — just a local calendar lookup with clear exit codes (`0` = open, `10` = closed).
+
+```bash
+# An AI agent can gate a data-fetch step like this:
+if fin-bash check --exchange XNYS --date 2026-03-16; then
+  echo "Market open — proceed with data pipeline"
+fi
+
+# Or ask for the next N trading days to plan ahead:
+fin-bash next --count 5
+```
+
 ## Installation
 
 ### Requirements
