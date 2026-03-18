@@ -198,3 +198,21 @@ $ fin-bash check --date 2026-11-27
 ```
 
 So `--session regular` at 14:00 ET on that day would **skip**, because 14:00 is past the 13:00 early close.
+
+**Q: Is there a risk of the market calendar being out of date? Do I need to re-compile `fin-bash`?**
+
+There is a small risk for **unexpected, ad-hoc market closures** (e.g., emergency weather closures or a National Day of Mourning). Standard recurring holidays are calculated dynamically and will remain accurate far into the future. 
+
+Since `fin-bash` is a Python tool, you **do not** need to re-compile anything. The calendar data comes from the `exchange-calendars` package. To get the latest calendar updates for sudden closures, simply upgrade the dependency in your virtual environment:
+
+```bash
+# On macOS / Linux
+cd fin-bash
+.venv/bin/pip install --upgrade exchange-calendars
+
+# On Windows
+cd fin-bash
+.venv\Scripts\pip install --upgrade exchange-calendars
+```
+
+The next time `fin-bash` runs, it will immediately use the newly downloaded calendar rules.
