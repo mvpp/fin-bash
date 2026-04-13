@@ -47,6 +47,18 @@ def _get_calendar(exchange: str) -> xcals.ExchangeCalendar:
         )
 
 
+def exchange_local_date(exchange: str) -> date:
+    """Return today's date in the exchange's own timezone.
+
+    Use this instead of date.today() when running from a machine that may be
+    in a very different timezone from the exchange (e.g. checking XHKG from
+    California late at night, where it is already the next calendar day in HK).
+    """
+    cal = _get_calendar(exchange)
+    tz = ZoneInfo(str(cal.tz))
+    return datetime.now(tz=tz).date()
+
+
 def is_trading_day(exchange: str, target_date: date) -> bool:
     """Check if *target_date* is a trading session on *exchange*."""
     cal = _get_calendar(exchange)

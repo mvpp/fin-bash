@@ -17,7 +17,7 @@ import os
 import sys
 from datetime import date, datetime
 
-from fin_bash.calendar import get_next_sessions, get_session_info, is_market_open, is_trading_day
+from fin_bash.calendar import exchange_local_date, get_next_sessions, get_session_info, is_market_open, is_trading_day
 from fin_bash.config import Config
 from fin_bash.logger import setup_logging
 
@@ -61,6 +61,8 @@ def _build_global_parser() -> argparse.ArgumentParser:
                         help="Preview: print whether the job would run, then exit")
     parser.add_argument("--date", type=_parse_date, default=None,
                         help="Override the date to check (useful with --dry-run)")
+    parser.add_argument("--tz-aware", action="store_true",
+                        help="Resolve 'today' in the exchange's local timezone instead of the machine's")
     return parser
 
 
@@ -72,6 +74,8 @@ def _build_check_parser() -> argparse.ArgumentParser:
     parser.add_argument("--config", metavar="PATH")
     parser.add_argument("--date", type=_parse_date, default=None,
                         help="Date to check (default: today)")
+    parser.add_argument("--tz-aware", action="store_true",
+                        help="Resolve 'today' in the exchange's local timezone instead of the machine's")
     return parser
 
 
@@ -82,6 +86,8 @@ def _build_next_parser() -> argparse.ArgumentParser:
     parser.add_argument("--config", metavar="PATH")
     parser.add_argument("--count", "-n", type=int, default=10,
                         help="Number of days to show (default: 10)")
+    parser.add_argument("--tz-aware", action="store_true",
+                        help="Resolve 'today' in the exchange's local timezone instead of the machine's")
     return parser
 
 
@@ -107,12 +113,23 @@ def _detect_subcommand(argv: list[str]) -> str | None:
 def _cmd_check(args: argparse.Namespace, config: Config, logger) -> int:
     """Handle `fin-bash check`."""
     exchange = args.exchange or config.exchange
-    target = args.date or date.today()
+    tz_aware = getattr(args, "tz_aware", False)
+    if args.date:
+        target = args.date
+    elif tz_aware:
+        target = exchange_local_date(exchange)
+    else:
+        target = date.today()
 
     if is_trading_day(exchange, target):
         info = get_session_info(exchange, target)
         print(f"✓  {target}  is a trading day on {exchange}")
         print(f"   Session: {info.format_times()}")
+        if tz_aware:
+            from zoneinfo import ZoneInfo
+            import exchange_calendars as xcals
+            cal = xcals.get_calendar(exchange)
+            print(f"   (date resolved in exchange timezone: {cal.tz})")
         return EXIT_OK
     else:
         print(f"✗  {target}  is NOT a trading day on {exchange}")
@@ -123,7 +140,9 @@ def _cmd_next(args: argparse.Namespace, config: Config, logger) -> int:
     """Handle `fin-bash next`."""
     exchange = args.exchange or config.exchange
     count = args.count
-    sessions = get_next_sessions(exchange, count=count)
+    tz_aware = getattr(args, "tz_aware", False)
+    after = exchange_local_date(exchange) if tz_aware else date.today()
+    sessions = get_next_sessions(exchange, count=count, after=after)
 
     print(f"Next {len(sessions)} trading days on {exchange}:\n")
     for info in sessions:
@@ -138,7 +157,13 @@ def _cmd_run(args: argparse.Namespace, script_args: list[str], config: Config, l
     """Default mode: check market, then run the script via /bin/bash."""
     exchange = args.exchange or config.exchange
     session = args.session or config.session
-    target = args.date or date.today()
+    tz_aware = getattr(args, "tz_aware", False)
+    if args.date:
+        target = args.date
+    elif tz_aware:
+        target = exchange_local_date(exchange)
+    else:
+        target = date.today()
     dry_run = args.dry_run
 
     if not script_args and not dry_run:

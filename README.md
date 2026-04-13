@@ -216,3 +216,24 @@ cd fin-bash
 ```
 
 The next time `fin-bash` runs, it will immediately use the newly downloaded calendar rules.
+
+**Q: I run `fin-bash` from California but check a non-US exchange (e.g. XHKG). Does it use the right date?**
+
+By default, `fin-bash` uses `date.today()` from the **machine's local clock**. If you run it Sunday night in California, it checks Sunday — even though it is already Monday in Hong Kong.
+
+Use `--tz-aware` to resolve "today" in the **exchange's own timezone** instead:
+
+```bash
+fin-bash check --exchange XHKG --tz-aware
+# Output: (date resolved in exchange timezone: Asia/Hong_Kong)
+```
+
+This applies to all commands:
+
+```bash
+fin-bash check --exchange XHKG --tz-aware
+fin-bash next  --exchange XHKG --tz-aware --count 5
+fin-bash --exchange XHKG --tz-aware ~/scripts/hk_scan.sh
+```
+
+> **Note:** `--tz-aware` is only needed when your machine's date and the exchange's local date could differ — which happens when there is a large timezone offset and you are running close to midnight.
